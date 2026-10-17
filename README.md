@@ -55,7 +55,9 @@ python3 -m http.server 8000
 ```
 
 > 預覽頁用 `fetch()` 讀 JSON，所以需要 http；直接雙擊 `file://` 會被瀏覽器擋。
-> GitHub Pages 可直接開 `demo/`（Pages 設定 root 後網址是 `/demo/`）。
+>
+> **線上預覽（GitHub Pages）**：<https://cormort.github.io/agri_special_fund_forms/>
+> （Pages 來源 = `main` / `(root)`，根目錄 `index.html` 會自動導到 `demo/`）
 
 ---
 
