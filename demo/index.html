@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>農業特別收入基金 表單預覽</title>
+<style>
+  :root {
+    --line: #dbe2ea; --bg: #f6f8fb; --ink: #1f2933; --muted: #64748b;
+    --accent: #6d28d9; --accent-soft: #f3e8ff; --num: #0f766e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55;
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  }
+  header { background: #fff; border-bottom: 1px solid var(--line); padding: 18px 24px; }
+  header .top { display: flex; align-items: center; gap: 12px; }
+  header .logo {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-size: 19px;
+  }
+  h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
+  .badges { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; background: var(--accent-soft); color: #5b21b6;
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  main { max-width: 1280px; margin: 0 auto; padding: 18px 20px 64px; }
+  .tabs { display: flex; gap: 6px; background: #eef1f6; padding: 5px; border-radius: 999px; width: fit-content; }
+  .tabs button {
+    border: 0; background: transparent; padding: 8px 18px; border-radius: 999px;
+    font: inherit; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer;
+  }
+  .tabs button.active { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .funds { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 12px; }
+  .funds button {
+    border: 1px solid var(--line); background: #fff; padding: 6px 12px; border-radius: 8px;
+    font: inherit; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer;
+  }
+  .funds button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .note { font-size: 12px; color: var(--muted); margin: 6px 0 14px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 2px; }
+  .card .meta { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .wrap { overflow: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  th, td { border: 1px solid var(--line); padding: 5px 8px; vertical-align: top; }
+  th { background: #eef2f7; font-weight: 700; white-space: nowrap; color: #334155; position: sticky; top: 0; z-index: 1; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--num); }
+  td.name { min-width: 260px; }
+  td.desc { color: var(--muted); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr.lv-0 td { background: #f1f5f9; font-weight: 700; }
+  tr.lv-1 td.name { font-weight: 700; color: #1e293b; }
+  tr.lv-2 td.name { padding-left: 20px; }
+  tr.lv-3 td.name { padding-left: 34px; }
+  tr.lv-4 td.name { padding-left: 48px; }
+  tr.lv-5 td.name { padding-left: 62px; }
+  td.auto { background: #f0fdfa; font-weight: 700; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); font-size: 13px; }
+  .review { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--muted); }
+  .review b { color: #334155; }
+  .err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 14px; border-radius: 10px; font-size: 13px; }
+  footer { max-width: 1280px; margin: 0 auto; padding: 0 20px 40px; font-size: 12px; color: var(--muted); }
+  code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo">📜</div>
+    <div>
+      <h1 id="title">農業特別收入基金 表單預覽</h1>
+      <p class="sub" id="subtitle">載入中…</p>
+    </div>
+    <div class="badges" id="badges"></div>
+  </div>
+</header>
+<main>
+  <div class="tabs" id="tabs"></div>
+  <div class="funds" id="funds"></div>
+  <p class="note" id="note"></p>
+  <div id="content"></div>
+</main>
+<footer>
+  本頁只讀取 <code>forms/agri-special-fund.json</code> 與 <code>data/*.json</code> 畫出表單，不會寫入任何資料。
+  需要編輯、自動存檔、匯出 Doc／CSS 或上傳官方 xlsx，請使用 <a href="https://github.com/cormort/local_gov_budget">local_gov_budget</a>。
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var FORMS_URL = '../forms/agri-special-fund.json';
+  var state = { forms: null, data: {}, tab: 'plan', fund: null };
+
+  function $(id) { return document.getElementById(id); }
+
+  function fmt(v) {
+    if (v === '' || v == null) return '';
+    var n = Number(String(v).replace(/,/g, ''));
+    if (!isFinite(n)) return String(v);
+    return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  }
+  function num(v) {
+    if (v === '' || v == null) return null;
+    var n = Number(String(v).replace(/,/g, ''));
+    return isFinite(n) ? n : null;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---- 計算：核列 = 原編 + 增減；母列 = 直屬子列加總 ----
+  function computeRows(forms, table, rows) {
+    var out = rows.map(function (r) { return Object.assign({}, r); });
+    var rules = forms.rules || {};
+    out.forEach(function (row) {
+      if (!rules.recalcRow || !rules.recalcRow.dep_app) return;
+      var depApp = (num(row.orig) || 0) + (num(row.dep_diff) || 0);
+      var govApp = depApp + (num(row.gov_diff) || 0);
+      row.dep_app = depApp ? String(depApp) : '';
+      row.gov_app = govApp ? String(govApp) : '';
+    });
+    if (!table.hasLevel) return out;
+
+    (rules.planSumFields || ['bud114']).forEach(function (field) {
+      for (var i = out.length - 1; i >= 0; i--) {
+        var lv = parseInt(out[i].level, 10) || 0;
+        var kids = [];
+        for (var j = i + 1; j < out.length; j++) {
+          var jlv = parseInt(out[j].level, 10) || 0;
+          if (jlv <= lv) break;
+          if (jlv === lv + 1) kids.push(out[j]);
+        }
+        if (!kids.length) continue;
+        var skip = (rules.noAutoSumKeywords || []).some(function (k) {
+          return String(out[i].name || '').indexOf(k) >= 0;
+        });
+        if (skip) continue;
+        var vals = kids.map(function (k) { return num(k[field]); }).filter(function (v) { return v !== null; });
+        if (!vals.length) continue;
+        out[i][field] = String(vals.reduce(function (a, b) { return a + b; }, 0));
+      }
+    });
+    return out;
+  }
+
+  // ---- 畫表 ----
+  function renderTable(tableId) {
+    var forms = state.forms;
+    var table = forms.tables.filter(function (t) { return t.id === tableId; })[0];
+    if (!table) return '<div class="err">找不到表格 ' + esc(tableId) + '</div>';
+    var rows = (state.data[tableId] || []).slice();
+    if (!rows.length) return '<div class="card"><h2>' + esc(table.title) + '</h2><div class="empty">此表尚無資料</div></div>';
+
+    rows = computeRows(forms, table, rows);
+    var autoCols = Object.keys(forms.columns).filter(function (c) { return forms.columns[c].auto; });
+
+    var head = '<tr>' + table.cols.filter(function (c) { return c !== 'level'; }).map(function (c) {
+      var label = (forms.columns[c] || {}).label || c;
+      return '<th class="' + (c === 'name' ? 'name' : c === 'desc' ? 'desc' : 'num') + '">' + esc(label) + '</th>';
+    }).join('') + '</tr>';
+
+    var body = rows.map(function (row) {
+      var lv = parseInt(row.level, 10) || 0;
+      var cells = table.cols.filter(function (c) { return c !== 'level'; }).map(function (c) {
+        var v = row[c];
+        if (c === 'name') return '<td class="name">' + esc(v || '') + '</td>';
+        if (c === 'desc') return '<td class="desc" title="' + esc(v || '') + '">' + esc(v || '') + '</td>';
+        var cls = 'num' + (autoCols.indexOf(c) >= 0 ? ' auto' : '');
+        return '<td class="' + cls + '">' + esc(fmt(v)) + '</td>';
+      }).join('');
+      return '<tr class="lv-' + lv + '">' + cells + '</tr>';
+    }).join('');
+
+    return '<div class="card">'
+      + '<h2>' + esc(table.title) + '</h2>'
+      + '<p class="meta">表號 ' + esc(table.sheetId || '') + '　單位：' + esc(table.unit || '') + '　' + rows.length + ' 列</p>'
+      + '<div class="wrap"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>'
+      + '</div>';
+  }
+
+  function tablesForTab(tab) {
+    var forms = state.forms;
+    if (tab === 'plan') {
+      return forms.tables.filter(function (t) { return t.isPlan && t.fundCode === state.fund; })
+        .sort(function (a, b) {
+          if (a.section !== b.section) return a.section === 'src' ? -1 : 1;
+          return a.id.localeCompare(b.id);
+        })
+        .map(function (t) { return t.id; });
+    }
+    if (tab === 'personnel') {
+      return forms.tables.filter(function (t) { return t.id === 'headcount'; }).map(function (t) { return t.id; })
+        .concat(forms.tables.filter(function (t) { return t.id === 'personnel_cost_' + state.fund; }).map(function (t) { return t.id; }));
+    }
+    return forms.tables.filter(function (t) { return t.id === 'control_' + state.fund; }).map(function (t) { return t.id; });
+  }
+
+  function render() {
+    var forms = state.forms;
+    $('tabs').innerHTML = forms.tabs.map(function (t) {
+      return '<button data-tab="' + esc(t.id) + '" class="' + (t.id === state.tab ? 'active' : '') + '">' + esc(t.suffix) + '</button>';
+    }).join('');
+    $('funds').innerHTML = forms.funds.map(function (f) {
+      return '<button data-fund="' + esc(f.code) + '" class="' + (f.code === state.fund ? 'active' : '') + '">' + esc(f.name) + '</button>';
+    }).join('');
+    $('funds').style.display = state.tab === 'personnel' || state.tab === 'control' || state.tab === 'plan' ? 'flex' : 'none';
+    $('note').textContent = '唯讀預覽：數字為 data/*.json 的預設值；「主管核列／院擬核列」與母列加總為即時計算結果。';
+
+    $('content').innerHTML = tablesForTab(state.tab).map(renderTable).join('')
+      || '<div class="empty">此分頁沒有表格</div>';
+    var review = forms.tabs.filter(function (t) { return t.id === state.tab; })[0];
+    if (review) {
+      $('content').insertAdjacentHTML('beforeend',
+        '<div class="review"><b>審核意見</b>（' + esc(review.suffix) + '，' + esc(forms.funds.length) + ' 個基金共用）：主管機關／先期審查機關 — 請於 local_gov_budget 填寫。</div>');
+    }
+  }
+
+  function bind() {
+    document.addEventListener('click', function (ev) {
+      var t = ev.target.closest('[data-tab]');
+      if (t) { state.tab = t.getAttribute('data-tab'); render(); return; }
+      var f = ev.target.closest('[data-fund]');
+      if (f) { state.fund = f.getAttribute('data-fund'); render(); }
+    });
+  }
+
+  async function boot() {
+    try {
+      var formsRes = await fetch(FORMS_URL, { cache: 'no-cache' });
+      if (!formsRes.ok) throw new Error('forms 載入失敗：HTTP ' + formsRes.status);
+      state.forms = await formsRes.json();
+      var forms = state.forms;
+      state.fund = forms.funds[0].code;
+      state.tab = (forms.tabs[0] && forms.tabs[0].id) || 'plan';
+
+      $('title').textContent = forms.meta.title;
+      $('subtitle').textContent = forms.meta.subtitle + '　·　' + forms.meta.year + ' 年度　·　' + (forms.meta.org || '');
+      $('badges').innerHTML = [
+        forms.tables.length + ' 張表',
+        forms.funds.length + ' 個基金',
+        'v' + forms.schemaVersion
+      ].map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('');
+
+      // 合併各基金資料（headcount 共用，只取第一份）
+      var merged = {};
+      for (var code of Object.keys(forms.data || {})) {
+        var res = await fetch('../' + forms.data[code], { cache: 'no-cache' });
+        if (!res.ok) throw new Error(forms.data[code] + ' 載入失敗：HTTP ' + res.status);
+        var doc = await res.json();
+        Object.keys(doc.tables || {}).forEach(function (tid) {
+          if (tid === 'headcount' && merged[tid]) return;
+          merged[tid] = (merged[tid] || []).concat(doc.tables[tid]);
+        });
+      }
+      state.data = merged;
+      render();
+      bind();
+    } catch (e) {
+      $('content').innerHTML = '<div class="err">載入失敗：' + esc(e.message)
+        + '<br>請用靜態伺服器開啟（例如 <code>python3 -m http.server</code>），直接雙擊 file:// 會被瀏覽器阻擋 fetch。</div>';
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
