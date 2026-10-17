@@ -58,13 +58,24 @@
 - 本機 git 已與遠端同步：遠端由 Web 上傳建立，本地 commit 保留為 `source-snapshot` 分支，
   `main` 指向遠端 HEAD，兩者樹狀內容一致（見驗證紀錄）。
 
+## GitHub Pages（已開啟）
+
+- 網址：**<https://cormort.github.io/agri_special_fund_forms/>**（根目錄 `index.html` 導向 `demo/`）
+- 設定：`Settings → Pages → Deploy from a branch → main / (root)`
+- 為什麼不是 `/docs` 也不是 Actions：Pages 只允許 `/` 或 `/docs`，而預覽在 `demo/`
+  且需要相對路徑讀 `../forms/`、`../data/`；放 root 最省事，Actions 只能發布單一目錄反而會斷。
+
+## 與引擎的同步（已接上）
+
+`local_gov_budget` 已改成 consumer：`special-fund.js` 不再自帶 `COL`／`tableConfigs`／`SAMPLES`，
+而是由 `npm run sync:forms` 讀本 repo 的 `forms/`、`profiles/`、`data/` 產生
+`vendor/forms/*.js` 後載入（引擎端淨減 814 行，行為以重構前後 `collectData()` 全量對帳確認相同）。
+
 ## 待確認／未做
-- **GitHub Pages**：若要在 Pages 開 `demo/`，需在 repo 設定裡指定分支／目錄；
-  這會公開發布一個網址，屬對外發布動作，未在未經同意的情況下代為開啟。
-- **自動同步機制**：目前沒有「從引擎重新產生 forms JSON」的腳本（引擎的定義仍是 JS 常數）。
-  若要長期維護，建議把 `special-fund.js` 的 `tableConfigs`／`COL` 改成讀 `forms/*.json`，
-  讓引擎變成純 consumer；那是 local_gov_budget 的重構，不在本次範圍。
-- **5320 詳細表**（員額／用人費／管制項目）不在 repo 內，13 張表仍無自動更新路徑。
+
+- **5320 詳細表**（員額／用人費／管制項目）不在 repo 內，13 張表仍無自動更新路徑；
+  `personnel_cost_disaster`、`personnel_cost_fish` 目前是空陣列（引擎端顯示空表，不再用假資料填充）。
+- **資料版本歷史**：目前只有 git 歷史，沒有 per-version 快照或差異檢視。
 
 ## 驗證紀錄
 
