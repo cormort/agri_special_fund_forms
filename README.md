@@ -159,8 +159,7 @@ python3 -m http.server 8000
 4. **來源**：官方檔與 profile 存在、profile 的基金名稱與 `forms.funds` 一致、
    `valueKey`／`scale`／`tableTemplates` 可解析
 
-目前輸出：25 張表、12 個欄位、6 個基金、6 個資料檔、254 列，**12 個警告**——
-都是同一件事：`data/*.json` 保留了 113 年度決算（`dec112`）但表單不顯示。
+目前輸出：25 張表、12 個欄位、6 個基金、6 個資料檔、254 列，**0 個警告**。
 
 ---
 
@@ -169,8 +168,6 @@ python3 -m http.server 8000
 - **兩張表是空的**：`data/sample_fund_disaster.json` 的 `personnel_cost_disaster`、
   `data/sample_fund_fish.json` 的 `personnel_cost_fish` 是空陣列；引擎端會顯示空表
   （先前是用佔位假資料填充，已移除）。若確實該有內容，請補在 `data/`。
-- `dec112`（113 年度決算）仍存在於 `data/*.json`，但表單不顯示、驗證只給警告。
-  確定不再需要時可整批移除，警告就會消失。
 - 員額、用人費用、其他管制項目的官方來源是 **FNGBRB5320 詳細表**，該檔不在 repo 內，
   這 13 張表的預設值目前是既有資料，尚未有可重複執行的自動更新路徑。
 - 年度字樣與金額欄標籤目前不一致（表單標題 116 年度、金額欄是 115 年度預算），
