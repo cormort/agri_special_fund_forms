@@ -1,0 +1,12 @@
+{
+  "name": "agri-special-fund-forms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "農業特別收入基金 年度預算表單定義（6 基金 × 25 張表）",
+  "type": "module",
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "serve": "python3 -m http.server 8000"
+  },
+  "license": "Apache-2.0"
+}
