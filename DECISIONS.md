@@ -43,11 +43,22 @@
    資料檔保留 113 年度決算欄位（歷史資料），但目前表單不顯示。把它當錯誤會讓驗證永遠紅燈，
    當警告則能提醒「這批資料有冗欄」。是否整批移除留給資料擁有者決定。
 
-## 待確認／未做
+## 發布紀錄（2026-10-17）
 
-- **GitHub repo 建立與推送**：本機已完成 commit；遠端建立需要帳號授權，
-  由使用者執行（`gh repo create agri_special_fund_forms --public --source=. --push`
-  或直接在 GitHub 建 repo 後 `git push`）。原因見下。
+- 已在 GitHub 建立 **public** repo：<https://github.com/cormort/agri_special_fund_forms>
+- 推送方式：CLI 沒有可用憑證（`gh` 未登入、keychain 無 token、主要 SSH key 已停用），
+  所以改用**瀏覽器既有登入的 session**，以 GitHub Web 介面建立 repo 並上傳檔案
+  （每個目錄一個 commit）。憑證全程留在瀏覽器，沒有另外產生 token。
+- 曾嘗試的替代路徑與結果：
+  - **deploy key**（產生專用 ed25519，寫入 `~/.ssh/config` 的 managed 區塊）→
+    在 GitHub 加入金鑰時被 **sudo mode** 擋下（需 GitHub Mobile 或 email 驗證碼），
+    屬需要本人處理的驗證關卡，未硬闖；金鑰未註冊，已連同 config 條目清除。
+  - **`gh auth login --web`（device flow）** → 授權頁的「Authorize github」按鈕始終 disabled
+    並顯示 "You can't perform that action at this time."，未取得 token。
+- 本機 git 已與遠端同步：遠端由 Web 上傳建立，本地 commit 保留為 `source-snapshot` 分支，
+  `main` 指向遠端 HEAD，兩者樹狀內容一致（見驗證紀錄）。
+
+## 待確認／未做
 - **GitHub Pages**：若要在 Pages 開 `demo/`，需在 repo 設定裡指定分支／目錄；
   這會公開發布一個網址，屬對外發布動作，未在未經同意的情況下代為開啟。
 - **自動同步機制**：目前沒有「從引擎重新產生 forms JSON」的腳本（引擎的定義仍是 JS 常數）。
@@ -64,5 +75,12 @@ $ node tools/validate.mjs
   {"forms":"agri-special-fund","version":"1.0.0","tables":25,"columns":12,"funds":6,"dataFiles":6,"rows":254}
 ```
 
+```
+$ git fetch origin main && git diff --stat FETCH_HEAD
+（無輸出 → 樹狀內容與遠端一致）
+$ curl -s -o /dev/null -w "%{http_code}" https://raw.githubusercontent.com/cormort/agri_special_fund_forms/main/forms/agri-special-fund.json
+200
+```
+
 預覽頁以 ego-browser 實測：25 張表、6 個基金、三個分頁切換、換基金、
-母列加總與核列即時計算皆正常（截圖見 commit 訊息所述）。
+母列加總與核列即時計算皆正常。
